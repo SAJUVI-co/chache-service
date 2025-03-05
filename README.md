@@ -1,99 +1,275 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Servicio `users_cache`
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Introducción
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+El servicio `users_cache` es un microservicio desarrollado con [NestJS](https://nestjs.com/) que se encarga de almacenar temporalmente los datos de los usuarios en una caché utilizando **Redis**. Está diseñado para mejorar el rendimiento de las aplicaciones reduciendo las consultas directas a bases de datos persistentes.
 
-## Description
+Este servicio está **dockerizado** y se comunica mediante un transporte **TCP**, lo que lo hace compatible con arquitecturas basadas en microservicios.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## Tecnologías utilizadas
 
-```bash
-$ pnpm install
+- **NestJS**: Framework para construir aplicaciones escalables en Node.js.
+- **Redis**: Base de datos en memoria utilizada para el almacenamiento en caché.
+- **Docker**: Para contenerizar la aplicación y Redis.
+- **PNPM**: Administrador de paquetes utilizado para la instalación de dependencias.
+
+---
+
+## Arquitectura del servicio
+
+El servicio se estructura en los siguientes módulos principales:
+
+1. **Módulo Principal (`AppModule`)**: Punto de entrada de la aplicación.
+2. **Módulo de Caché (`UserCacheModule`)**: Maneja las operaciones de almacenamiento, recuperación y eliminación en Redis.
+3. **Controlador (`UserCacheController`)**: Expone métodos para interactuar con la caché mediante patrones de mensajes.
+4. **Servicio (`UserCacheService`)**: Implementa la lógica de negocio para gestionar la caché.
+
+---
+
+## Configuración de Entorno
+
+Las variables de entorno necesarias para ejecutar el servicio están definidas en `envs.config.ts` y se validan con `joi` para asegurar que contengan los valores esperados.
+
+### Variables requeridas:
+
+| Variable       | Descripción                         | Tipo   |
+|---------------|-------------------------------------|--------|
+| `REDIS_HOST`  | Dirección del servidor Redis       | String |
+| `REDIS_PORT`  | Puerto de Redis                    | Number |
+| `SERVER_HOST` | Dirección del microservicio       | String |
+| `SERVER_PORT` | Puerto del microservicio          | Number |
+
+Si alguna variable de entorno está ausente o mal configurada, la aplicación lanzará un error durante la inicialización.
+
+---
+
+## Implementación
+
+### 1. **Bootstrap de la aplicación (`main.ts`)**
+
+Este archivo configura el servicio como un **microservicio TCP** en NestJS, utilizando las variables de entorno para definir la dirección y el puerto.
+
+```typescript
+async function bootstrap() {
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AppModule,
+    {
+      transport: Transport.TCP,
+      options: {
+        host: SERVER_HOST,
+        port: SERVER_PORT,
+      },
+    },
+  );
+
+  await app.listen();
+
+  const logger = new Logger('Users cache');
+  logger.log('Service Running');
+}
+bootstrap().catch((error) => {
+  const logger = new Logger('Bootstrap');
+  logger.error('Error during bootstrap', error);
+});
+```
+---
+
+### 2. **Módulo Principal (`app.module.ts`)**
+
+Este módulo importa el módulo de caché y define la estructura del servicio.
+
+```typescript
+@Module({
+  imports: [UserCacheModule],
+})
+export class AppModule {}
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ pnpm run start
+### 3. **Servicio de Caché (`cache.service.ts`)**
 
-# watch mode
-$ pnpm run start:dev
+Este servicio implementa las funciones de almacenamiento, recuperación y eliminación de datos en Redis.
 
-# production mode
-$ pnpm run start:prod
+#### Métodos principales:
+
+- `saveCache(id: string, data: any)`: Guarda un objeto en la caché con una expiración de 1 hora.
+- `getCache(id: string)`: Obtiene un objeto de la caché basado en su `id`.
+- `deleteCache(id: string)`: Elimina un objeto de la caché.
+
+```typescript
+@Injectable()
+export class UserCacheService {
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+
+  private h: number = 60 * 60 * 1000; // 1 hora en milisegundos
+
+  async saveCache(id: string, data: any): Promise<void> {
+    try {
+      return await this.cacheManager.set(id, data, this.h);
+    } catch (error) {
+      throw new RpcException({
+        message: error instanceof Error ? error.message : 'Unknown error',
+        statusCode: 400,
+      });
+    }
+  }
+
+  async getCache(id: string) {
+    try {
+      return await this.cacheManager.get(id);
+    } catch (error) {
+      throw new RpcException({
+        message: error instanceof Error ? error.message : 'Unknown error',
+        statusCode: 400,
+      });
+    }
+  }
+
+  async deleteCache(id: string) {
+    try {
+      return await this.cacheManager.del(id);
+    } catch (error) {
+      throw new RpcException({
+        message: error instanceof Error ? error.message : 'Unknown error',
+        statusCode: 400,
+      });
+    }
+  }
+}
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ pnpm run test
+### 4. **Controlador de Caché (`cache.controller.ts`)**
 
-# e2e tests
-$ pnpm run test:e2e
+Expone métodos que permiten interactuar con la caché a través de mensajes.
 
-# test coverage
-$ pnpm run test:cov
+| Método        | Descripción |
+|--------------|------------|
+| `test()` | Método de prueba para verificar la conectividad. |
+| `saveCache({ id, data })` | Guarda datos en la caché. |
+| `getCache({ id })` | Recupera datos de la caché. |
+| `deleteCache(id)` | Elimina un dato de la caché. |
+
+```typescript
+@Controller()
+export class UserCacheController {
+  constructor(private readonly cacheService: UserCacheService) {}
+
+  @MessagePattern('test')
+  create() {
+    return this.cacheService.test();
+  }
+
+  @MessagePattern('saveCache')
+  async saveCache(@Payload() payload: { id: string; data: Promise<any> }) {
+    return await this.cacheService.saveCache(payload.id, payload.data);
+  }
+
+  @MessagePattern('getUserCache')
+  getCache(@Payload() payload: { id: string }) {
+    return this.cacheService.getCache(payload.id);
+  }
+
+  @MessagePattern('delUserCache')
+  deleteCache(@Payload() payload: string) {
+    return this.cacheService.deleteCache(payload);
+  }
+}
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## **Dockerización del servicio**
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 1. **Dockerfile**
 
-```bash
-$ pnpm install -g mau
-$ mau deploy
+Este archivo define la imagen de Docker del servicio.
+
+```dockerfile
+FROM node:22.13
+
+WORKDIR /home/cache
+
+COPY . /home/cache/
+
+RUN npm install -g pnpm
+RUN pnpm install
+RUN pnpm build
+
+EXPOSE 5001
+
+CMD ["pnpm", "start:prod"]
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+### 2. **Docker Compose (`docker-compose.yml`)**
 
-Check out a few resources that may come in handy when working with NestJS:
+Este archivo define cómo se ejecutan los contenedores de la aplicación y Redis.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```yaml
+services:
+  users_cache:
+    container_name: users_cache
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - '${SERVER_PORT}:5001'
+    networks:
+      - service_network
+    depends_on:
+      - redis_DB
 
-## Support
+  redis_DB:
+    image: redis:latest
+    restart: always
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    ports:
+      - '${REDIS_PORT}:6379'
+    networks:
+      - service_network
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+volumes:
+  redis_data:
 
-## Stay in touch
+networks:
+  service_network:
+    external: true
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## **Cómo Ejecutar el Servicio**
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### 1. **Ejecutar con Docker Compose**
+```sh
+docker-compose up -d
+```
+
+### 2. **Verificar los contenedores**
+```sh
+docker ps
+```
+
+### 3. **Probar el servicio**
+Desde otro servicio o cliente compatible con microservicios TCP en NestJS, se pueden enviar mensajes como:
+
+```typescript
+client.send('saveCache', { id: '123', data: { name: 'Juan' } });
+client.send('getUserCache', { id: '123' });
+client.send('delUserCache', '123');
+```
+
+---
+
+## **Conclusión**
+
+El servicio `users_cache` es una solución eficiente para el almacenamiento temporal de datos de usuario utilizando **Redis**. Su implementación con **NestJS** permite una arquitectura modular y escalable, mientras que **Docker** facilita su despliegue en entornos distribuidos.
