@@ -14,7 +14,7 @@ Este servicio está **dockerizado** y se comunica mediante un transporte **TCP**
 - [Configuración de Entorno](#configuración-de-entorno)  
   - [Variables requeridas](#variables-requeridas)  
 - [Implementación](#implementación)  
-  - [Bootstrap de la aplicación (main.ts)](#bootstrap-de-la-aplicación-maints)  
+  - [Bootstrap de la aplicación (main.ts)](#Bootstrap-de-la-aplicación-(`main.ts`))  
   - [Módulo Principal (app.module.ts)](#módulo-principal-appmodulets)  
   - [Servicio de Caché (cache.service.ts)](#servicio-de-caché-cacheservicets)  
     - [Métodos principales](#métodos-principales)  
