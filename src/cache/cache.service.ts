@@ -6,15 +6,18 @@ import { Cache } from 'cache-manager';
 @Injectable()
 export class UserCacheService {
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  private s: number = 1000;
+  private m: number = 60 * this.s;
+  private h: number = 60 * this.m;
 
   test() {
     return 'hola';
   }
 
-  async saveCache(id: string, data: any) {
+  //! CHECK
+  async saveCache(id: string, data: any): Promise<void> {
     try {
-      await this.cacheManager.set(id, data, 3600);
-      return 'user saved in cache';
+      return await this.cacheManager.set(id, data, this.h);
     } catch (error) {
       throw new RpcException({
         message: error instanceof Error ? error.message : 'Unknown error',

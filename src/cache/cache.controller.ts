@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UserCacheService } from './cache.service';
 
 @Controller()
@@ -12,17 +12,23 @@ export class UserCacheController {
   }
 
   @MessagePattern('saveCache')
-  saveCache(id: string, data: any) {
-    return this.cacheService.saveCache(id, data);
+  async saveCache(@Payload() payload: { id: string; data: Promise<any> }) {
+    const { id, data } = payload;
+    const info = await this.cacheService.saveCache(id, data);
+    console.log(info);
+    return info;
   }
 
   @MessagePattern('getUserCache')
-  getCache(id: string) {
-    return this.cacheService.getCache(id.toString());
+  getCache(@Payload() payload: { id: string }) {
+    const { id } = payload;
+    const data = this.cacheService.getCache(id);
+    console.log(data);
+    return data;
   }
 
   @MessagePattern('delUserCache')
-  deleteCache(id: string) {
-    return this.cacheService.deleteCache(id.toString());
+  deleteCache(@Payload() payload: string) {
+    return this.cacheService.deleteCache(payload);
   }
 }
