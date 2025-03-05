@@ -6,27 +6,27 @@ El servicio `users_cache` es un microservicio desarrollado con [NestJS](https://
 
 Este servicio está **dockerizado** y se comunica mediante un transporte **TCP**, lo que lo hace compatible con arquitecturas basadas en microservicios.
 
----
+---  
 
-## Indice
-- [Tecnologias utilizads](#Tecnologías-utilizadas)
-- [Arquitectura del servicio](#Arquitectura-del-servicio)
-- [Configuración de Entorno](#Configuración-de-Entorno)
-  - [Variables requeridas](#Variables-requeridas:) 
-- [Implementación](#Implementación)
-  - [1. Bootstrap de la aplicación (`main.ts`)](#Bootstrap-de-la-aplicación-(`main.ts`))
-  - [2. Módulo Principal (`app.module.ts`)](#2.-Módulo-Principal-(`app.module.ts`))
-  - [3. Servicio de Caché (`cache.service.ts`)](#3.-Servicio-de-Caché-(`cache.service.ts`))
-    - [Métodos principales:](#Métodos-principales:)
-  - [4. Controlador de Caché (`cache.controller.ts`)](#4.-Controlador-de-Caché-(`cache.controller.ts`))
-- [Dockerización del servicio](#Dockerización-del-servicio)
-  - [1. Dockerfile](#1.-Dockerfile)
-  - [2. Docker Compose (`docker-compose.yml`)](#2.-Docker-Compose-(`docker-compose.yml`))
-- [Cómo Ejecutar el Servicio](#Cómo-Ejecutar-el-Servicio)
-  - [1. Ejecutar con Docker Compose](#1.-Ejecutar-con-Docker-Compose)
-  - [2. Verificar los contenedores](#2.-Verificar-los-contenedores)
-  - [3. Probar el servicio](#3.-Probar-el-servicio)
-- [Conclusión](#Conclusión)
+## Indice  
+- [Tecnologías utilizadas](#tecnologías-utilizadas)  
+- [Arquitectura del servicio](#arquitectura-del-servicio)  
+- [Configuración de Entorno](#configuración-de-entorno)  
+  - [Variables requeridas](#variables-requeridas)  
+- [Implementación](#implementación)  
+  - [Bootstrap de la aplicación (main.ts)](#bootstrap-de-la-aplicación-maints)  
+  - [Módulo Principal (app.module.ts)](#módulo-principal-appmodulets)  
+  - [Servicio de Caché (cache.service.ts)](#servicio-de-caché-cacheservicets)  
+    - [Métodos principales](#métodos-principales)  
+  - [Controlador de Caché (cache.controller.ts)](#controlador-de-caché-cachecontrollerts)  
+- [Dockerización del servicio](#dockerización-del-servicio)  
+  - [Dockerfile](#dockerfile)  
+  - [Docker Compose (docker-compose.yml)](#docker-compose-docker-composeyml)  
+- [Cómo Ejecutar el Servicio](#cómo-ejecutar-el-servicio)  
+  - [Ejecutar con Docker Compose](#ejecutar-con-docker-compose)  
+  - [Verificar los contenedores](#verificar-los-contenedores)  
+  - [Probar el servicio](#probar-el-servicio)  
+- [Conclusión](#conclusión)  
 
 ---
 
