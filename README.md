@@ -8,6 +8,28 @@ Este servicio está **dockerizado** y se comunica mediante un transporte **TCP**
 
 ---
 
+## Indice
+- [Tecnologias utilizads](#Tecnologías-utilizadas)
+- [Arquitectura del servicio](#Arquitectura-del-servicio)
+- [Configuración de Entorno](#Configuración-de-Entorno)
+  - [Variables requeridas](#Variables-requeridas:) 
+- [Implementación](#Implementación)
+  - [1. Bootstrap de la aplicación (`main.ts`)](#1.-Bootstrap-de-la-aplicación-(`main.ts`))
+  - [2. Módulo Principal (`app.module.ts`)](#2.-Módulo-Principal-(`app.module.ts`))
+  - [3. Servicio de Caché (`cache.service.ts`)](#3.-Servicio-de-Caché-(`cache.service.ts`))
+    - [Métodos principales:](#Métodos-principales:)
+  - [4. Controlador de Caché (`cache.controller.ts`)](#4.-Controlador-de-Caché-(`cache.controller.ts`))
+- [Dockerización del servicio](#Dockerización-del-servicio)
+  - [1. Dockerfile](#1.-Dockerfile)
+  - [2. Docker Compose (`docker-compose.yml`)](#2.-Docker-Compose-(`docker-compose.yml`))
+- [Cómo Ejecutar el Servicio](#Cómo-Ejecutar-el-Servicio)
+  - [1. Ejecutar con Docker Compose](#1.-Ejecutar-con-Docker-Compose)
+  - [2. Verificar los contenedores](#2.-Verificar-los-contenedores)
+  - [3. Probar el servicio](#3.-Probar-el-servicio)
+- [Conclusión](#Conclusión)
+
+---
+
 ## Tecnologías utilizadas
 
 - **NestJS**: Framework para construir aplicaciones escalables en Node.js.
@@ -47,7 +69,7 @@ Si alguna variable de entorno está ausente o mal configurada, la aplicación la
 
 ## Implementación
 
-### 1. **Bootstrap de la aplicación (`main.ts`)**
+### 1. Bootstrap de la aplicación (`main.ts`)
 
 Este archivo configura el servicio como un **microservicio TCP** en NestJS, utilizando las variables de entorno para definir la dirección y el puerto.
 
@@ -76,7 +98,7 @@ bootstrap().catch((error) => {
 ```
 ---
 
-### 2. **Módulo Principal (`app.module.ts`)**
+### 2. Módulo Principal (`app.module.ts`)
 
 Este módulo importa el módulo de caché y define la estructura del servicio.
 
@@ -89,7 +111,7 @@ export class AppModule {}
 
 ---
 
-### 3. **Servicio de Caché (`cache.service.ts`)**
+### 3. Servicio de Caché (`cache.service.ts`)
 
 Este servicio implementa las funciones de almacenamiento, recuperación y eliminación de datos en Redis.
 
@@ -143,7 +165,7 @@ export class UserCacheService {
 
 ---
 
-### 4. **Controlador de Caché (`cache.controller.ts`)**
+### 4. Controlador de Caché (`cache.controller.ts`)
 
 Expone métodos que permiten interactuar con la caché a través de mensajes.
 
@@ -183,9 +205,9 @@ export class UserCacheController {
 
 ---
 
-## **Dockerización del servicio**
+## Dockerización del servicio
 
-### 1. **Dockerfile**
+### 1. Dockerfile
 
 Este archivo define la imagen de Docker del servicio.
 
@@ -207,7 +229,7 @@ CMD ["pnpm", "start:prod"]
 
 ---
 
-### 2. **Docker Compose (`docker-compose.yml`)**
+### 2. Docker Compose (`docker-compose.yml`)
 
 Este archivo define cómo se ejecutan los contenedores de la aplicación y Redis.
 
@@ -247,19 +269,19 @@ networks:
 
 ---
 
-## **Cómo Ejecutar el Servicio**
+## Cómo Ejecutar el Servicio
 
-### 1. **Ejecutar con Docker Compose**
+### 1. Ejecutar con Docker Compose
 ```sh
 docker-compose up -d
 ```
 
-### 2. **Verificar los contenedores**
+### 2. Verificar los contenedores
 ```sh
 docker ps
 ```
 
-### 3. **Probar el servicio**
+### 3. Probar el servicio
 Desde otro servicio o cliente compatible con microservicios TCP en NestJS, se pueden enviar mensajes como:
 
 ```typescript
@@ -270,6 +292,6 @@ client.send('delUserCache', '123');
 
 ---
 
-## **Conclusión**
+## Conclusión
 
 El servicio `users_cache` es una solución eficiente para el almacenamiento temporal de datos de usuario utilizando **Redis**. Su implementación con **NestJS** permite una arquitectura modular y escalable, mientras que **Docker** facilita su despliegue en entornos distribuidos.
