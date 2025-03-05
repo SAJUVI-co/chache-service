@@ -14,11 +14,11 @@ Este servicio está **dockerizado** y se comunica mediante un transporte **TCP**
 - [Configuración de Entorno](#configuración-de-entorno)  
   - [Variables requeridas](#variables-requeridas)  
 - [Implementación](#implementación)  
-  - [Bootstrap de la aplicación (main.ts)](#Bootstrap-de-la-aplicación-(`main.ts`))  
-  - [Módulo Principal (app.module.ts)](#módulo-principal-appmodulets)  
-  - [Servicio de Caché (cache.service.ts)](#servicio-de-caché-cacheservicets)  
+  - [Bootstrap de la aplicación (main.ts)](#bootstrap-de-la-aplicación-maints)  
+  - [Módulo Principal (app.module.ts)](#módulo-principal-app_modulets)  
+  - [Servicio de Caché (cache.service.ts)](#servicio-de-caché-cache_servicets)  
     - [Métodos principales](#métodos-principales)  
-  - [Controlador de Caché (cache.controller.ts)](#controlador-de-caché-cachecontrollerts)  
+  - [Controlador de Caché (cache.controller.ts)](#controlador-de-caché-cache_controllerts)  
 - [Dockerización del servicio](#dockerización-del-servicio)  
   - [Dockerfile](#dockerfile)  
   - [Docker Compose (docker-compose.yml)](#docker-compose-docker-composeyml)  
@@ -27,6 +27,7 @@ Este servicio está **dockerizado** y se comunica mediante un transporte **TCP**
   - [Verificar los contenedores](#verificar-los-contenedores)  
   - [Probar el servicio](#probar-el-servicio)  
 - [Conclusión](#conclusión)  
+ 
 
 ---
 
